@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -9,10 +9,11 @@ const Register = () => {
     phone: '',
     gender: '',
     password: '',
-    role: 'student', // Default to student
+    role: 'student',
   });
+
   const [error, setError] = useState('');
-  const { register, loading } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,22 +27,51 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (!formData.username || !formData.email || !formData.password) {
+    const { username, email, phone, password, role } = formData;
+
+    if (!username || !email || !password) {
       setError('Please fill in all required fields');
+      setLoading(false);
       return;
     }
 
-    const result = await register(formData);
-    if (result.success) {
-      // Navigate based on user role
-      if (formData.role === 'instructor') {
+    try {
+      // ✅ 1. Create Auth User
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (authError) throw authError;
+
+      const user = data.user;
+      if (!user) throw new Error('User creation failed');
+
+      // ✅ 2. Insert Profile Data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          full_name: username,
+          phone,
+          role,
+        });
+
+      if (profileError) throw profileError;
+
+      // ✅ 3. Redirect Based on Role
+      if (role === 'instructor') {
         navigate('/instructor');
       } else {
         navigate('/dashboard');
       }
-    } else {
-      setError(result.error || 'Registration failed');
+
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,133 +110,99 @@ const Register = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Username */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 transition-colors">
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
               Username
             </label>
             <input
               type="text"
-              id="username"
               name="username"
-              placeholder="Username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               required
+              className="w-full px-4 py-3 border rounded-lg"
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 transition-colors">
-              Email Address
-            </label>
+            <label className="block text-sm font-medium mb-2">Email Address</label>
             <input
               type="email"
-              id="email"
               name="email"
-              placeholder="Email Address"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               required
+              className="w-full px-4 py-3 border rounded-lg"
             />
           </div>
 
+          {/* Phone */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 transition-colors">
-              Phone Number
-            </label>
+            <label className="block text-sm font-medium mb-2">Phone Number</label>
             <input
               type="tel"
-              id="phone"
               name="phone"
-              placeholder="Your number"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border rounded-lg"
             />
           </div>
 
+          {/* Gender (Not saved yet – safe for now) */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 transition-colors">
-              Gender
-            </label>
+            <label className="block text-sm font-medium mb-2">Gender</label>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2 text-slate-600 dark:text-gray-400 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="male"
-                  checked={formData.gender === 'male'}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-teal-500 focus:ring-teal-500"
-                />
+              <label>
+                <input type="radio" name="gender" value="male" onChange={handleChange} />
                 Male
               </label>
-              <label className="flex items-center gap-2 text-slate-600 dark:text-gray-400 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="female"
-                  checked={formData.gender === 'female'}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-teal-500 focus:ring-teal-500"
-                />
+              <label>
+                <input type="radio" name="gender" value="female" onChange={handleChange} />
                 Female
               </label>
             </div>
           </div>
 
+          {/* Role */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 transition-colors">
-              Account Type
-            </label>
+            <label className="block text-sm font-medium mb-2">Account Type</label>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2 text-slate-600 dark:text-gray-400 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="role"
-                  value="student"
-                  checked={formData.role === 'student'}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-teal-500 focus:ring-teal-500"
-                />
+              <label>
+                <input type="radio" name="role" value="student" checked={formData.role === 'student'} onChange={handleChange} />
                 Student
               </label>
-              <label className="flex items-center gap-2 text-slate-600 dark:text-gray-400 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="role"
-                  value="instructor"
-                  checked={formData.role === 'instructor'}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-teal-500 focus:ring-teal-500"
-                />
+              <label>
+                <input type="radio" name="role" value="instructor" checked={formData.role === 'instructor'} onChange={handleChange} />
                 Instructor
               </label>
             </div>
           </div>
 
+          {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 transition-colors">
-              Password
-            </label>
+            <label className="block text-sm font-medium mb-2">Password</label>
             <input
               type="password"
-              id="password"
               name="password"
-              placeholder="Your Password"
+              minLength={6}
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               required
-              minLength={6}
+              className="w-full px-4 py-3 border rounded-lg"
             />
           </div>
 
-          <button type="submit" className="w-full py-3 bg-teal-500 text-white rounded-lg font-semibold hover:bg-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-teal-500 text-white rounded-lg font-semibold"
+          >
             {loading ? 'Registering...' : 'Register'}
           </button>
+
         </form>
       </div>
     </div>
