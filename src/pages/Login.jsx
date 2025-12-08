@@ -1,174 +1,84 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../contexts/AuthContext";
 
-const Login = () => {
-  const [formData, setFormData] = useState({
-    username: '', // this is the EMAIL now
-    password: '',
-    rememberMe: false,
-  });
-
-  const [error, setError] = useState('');
+export default function Login() {
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
+  const navigate = useNavigate();
+  const { profile } = useAuth();
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
-    const { username, password } = formData;
-
-    if (!username || !password) {
-      setError('Please fill in all fields');
-      setLoading(false);
-      return;
-    }
+    setError("");
 
     try {
-      // ✅ 1. Login with Supabase
-      const { data, error: loginError } =
-        await supabase.auth.signInWithPassword({
-          email: username,   // username field is used as EMAIL
-          password,
-        });
+      const { error } = await supabase.auth.signInWithPassword(formData);
+      if (error) throw error;
 
-      if (loginError) throw loginError;
-
-      const user = data.user;
-      if (!user) throw new Error('Login failed');
-
-      // ✅ 2. Get user role from profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // ✅ 3. Redirect based on role
-      if (profile.role === 'instructor') {
-        navigate('/instructor');
-      } else {
-        navigate('/dashboard');
-      }
-
+      // ✅ Redirect after profile loads
+      setTimeout(() => {
+        if (profile?.role === "instructor") {
+          navigate("/instructor-dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      }, 300);
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-slate-50">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-md">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold text-slate-800">
-            Welcome to our website!
-          </h2>
-        </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-white p-8 w-full max-w-md rounded-xl shadow">
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-        <div className="flex border-2 border-slate-200 rounded-3xl overflow-hidden mb-6">
-          <Link
-            to="/login"
-            className="flex-1 py-3 text-center font-medium text-white bg-teal-500 transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="flex-1 py-3 text-center font-medium text-slate-500 hover:text-slate-800 transition-colors"
-          >
-            Register
-          </Link>
-        </div>
-
-        <p className="text-slate-600 mb-6 text-center">
-          Join our platform and explore hundreds of online courses that fit your learning goals.
-        </p>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
+        {error && <p className="bg-red-100 p-3 mb-4 text-red-700">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            required
+            onChange={handleChange}
+            className="w-full p-3 border rounded"
+          />
 
-          {/* EMAIL (username field) */}
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-slate-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="username"
-              name="username"
-              placeholder="Enter your email"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          {/* PASSWORD */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div className="flex justify-between items-center">
-            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-              <input
-                type="checkbox"
-                name="rememberMe"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-                className="w-4 h-4 text-teal-500 border-slate-300 rounded focus:ring-teal-500"
-              />
-              Remember me
-            </label>
-
-            <Link to="/forgot-password" className="text-sm text-teal-500 hover:text-teal-600">
-              Forgot Password?
-            </Link>
-          </div>
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            required
+            onChange={handleChange}
+            className="w-full p-3 border rounded"
+          />
 
           <button
-            type="submit"
             disabled={loading}
-            className="w-full py-3 bg-teal-500 text-white rounded-lg font-semibold hover:bg-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-teal-500 py-3 text-white rounded"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
-
         </form>
+
+        <p className="mt-4 text-center text-sm">
+          No account?{" "}
+          <Link to="/register" className="text-teal-500">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );
-};
-
-export default Login;
+}
