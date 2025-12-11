@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// Individual todo item component
 function TodoItem({ task, onToggle, onDelete }) {
   return (
     <div
@@ -8,7 +7,6 @@ function TodoItem({ task, onToggle, onDelete }) {
         } mb-2 shadow-sm border hover:bg-gray-50 transition`}
     >
       <div className="flex items-center gap-3">
-        {/* Custom checkbox */}
         <button
           onClick={() => onToggle(task.id)}
           className={`w-4 h-4 rounded border flex items-center justify-center ${task.status === "done" ? "bg-green-500 border-green-500" : "border-gray-400"
@@ -29,7 +27,7 @@ function TodoItem({ task, onToggle, onDelete }) {
         </div>
       </div>
 
-      {/* Right side - status marker and delete button */}
+      {/* Right side*/}
       <div className="flex items-center gap-2">
         {task.status === "done" && <div className="w-2 h-2 rounded-full bg-green-500"></div>}
         <button
@@ -57,7 +55,6 @@ function TodoItem({ task, onToggle, onDelete }) {
   );
 }
 
-// Main TodoList component
 export default function ToDoItem() {
   const [tasks, setTasks] = useState([
     { id: 1, title: "Developing Restaurant Apps", time: "08:00 AM", status: "pending" },
@@ -75,12 +72,10 @@ export default function ToDoItem() {
     if (!date && !time) return null;
 
     if (date && time) {
-      // Format date to readable format (e.g., "Dec 25, 2024")
       const dateObj = new Date(date);
       const options = { month: 'short', day: 'numeric', year: 'numeric' };
       const formattedDate = dateObj.toLocaleDateString('en-US', options);
 
-      // Format time to 12-hour format (e.g., "08:00 AM")
       const [hours, minutes] = time.split(':');
       const hour12 = hours % 12 || 12;
       const ampm = hours >= 12 ? 'PM' : 'AM';

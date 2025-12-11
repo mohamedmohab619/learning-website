@@ -19,7 +19,6 @@ export default function Leaderboard() {
             key={user.rank}
             className="flex items-center justify-between p-3 border rounded-xl hover:bg-gray-50 transition"
           >
-            {/* Left user info */}
             <div className="flex items-center gap-3">
               <span className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 font-semibold text-gray-700 text-sm">
                 {user.rank}
@@ -34,7 +33,6 @@ export default function Leaderboard() {
               <span className="font-medium text-gray-700">{user.name}</span>
             </div>
 
-            {/* Right score */}
             <span className="text-sm font-semibold text-green-600">{user.score}</span>
           </div>
         ))}

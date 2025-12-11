@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Sidebar from "../components/sidebar";
 import InstructorCourseCard from "../components/InstructorCourseCard";
 import ProfileCard from "../components/ProfileCard";
@@ -10,22 +10,20 @@ import GaugeChart from "../components/GaugeChart";
 import Leaderboard from "../components/Leaderboard";
 
 import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function InstructorDashboard() {
+  const { user } = useAuth(); 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isTabletView, setIsTabletView] = useState(false);
-
   const [courses, setCourses] = useState([]);
-  const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
-      setIsTabletView(width >= 768 && width < 1024);
+      setIsSidebarOpen(width >= 1024);
     };
 
     checkScreenSize();
@@ -35,50 +33,45 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     const fetchInstructorCourses = async () => {
+      if (!user) return; 
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
-          .from("instructor_courses")
-          .select(`
-            course:courses (
-              id,
-              title,
-              description,
-              thumbnail_url
-            )
-          `);
+      try {
+        const { data, error } = await supabase
+          .from("courses")
+          .select("*")
+          .eq("instructor_id", user.id) // only courses by this instructor
+          .order("created_at", { ascending: false });
 
+        if (error) throw error;
 
-      console.log("✅ RAW SUPABASE DATA:", data);
-
-      if (error) {
-        console.error("Supabase error:", error);
-        setError("Failed to load instructor courses.");
-      } else if (!data || data.length === 0) {
-        setError("No instructor courses found.");
-        setCourses([]);
-      } else {
-        const formattedCourses = data.map(item => ({
-          id: item.course.id,
-          title: item.course.title,
-          lessons: `${item.course.lessons_count || 0} lessons`,
-          students: Math.floor(Math.random() * 500),
-          rating: (Math.random() * 2 + 3).toFixed(1), 
-          progress: Math.floor(Math.random() * 100),
-          color: "bg-indigo-50",
-          icon: null,
-        }));
-        setCourses(formattedCourses);
+        if (!data || data.length === 0) {
+          setCourses([]);
+          setError("No courses found.");
+        } else {
+          const formattedCourses = data.map(course => ({
+            id: course.id,
+            title: course.title,
+            lessons: `${course.duration || 0} lessons`, // optional
+            students: Math.floor(Math.random() * 500), // placeholder
+            rating: course.rating?.toFixed(1) || "0.0",
+            color: "bg-indigo-50",
+            thumbnail_url: course.thumbnail_url,
+          }));
+          setCourses(formattedCourses);
+        }
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+        setError("Failed to load courses.");
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchInstructorCourses();
-  }, []);
+  }, [user]);
 
-  
   const filteredCourses = useMemo(() => {
     if (!searchQuery.trim()) return courses;
     return courses.filter(course =>
@@ -86,7 +79,6 @@ export default function InstructorDashboard() {
     );
   }, [searchQuery, courses]);
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#E8F5FF]">
@@ -97,11 +89,7 @@ export default function InstructorDashboard() {
 
   return (
     <div className="flex bg-[#E8F5FF] min-h-screen">
-      <div
-        className={`fixed lg:static inset-y-0 left-0 z-50 transform transition-transform duration-300 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-      >
+      <div className={`fixed lg:static inset-y-0 left-0 z-50 transform transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <Sidebar onClose={() => setIsSidebarOpen(false)} />
       </div>
 
@@ -126,17 +114,17 @@ export default function InstructorDashboard() {
             {filteredCourses.map(course => (
               <InstructorCourseCard
                 key={course.id}
-                icon={course.icon}
                 title={course.title}
                 students={course.students}
                 rating={course.rating}
                 color={course.color}
+                thumbnail_url={course.thumbnail_url}
               />
             ))}
 
             {!filteredCourses.length && (
               <div className="col-span-full text-gray-600 text-center py-10">
-                No instructor courses yet.
+                {error || "No courses found."}
               </div>
             )}
           </div>
@@ -151,7 +139,7 @@ export default function InstructorDashboard() {
           </div>
 
           <div className="mt-8">
-            <Leaderboard />
+            {/* <Leaderboard /> */}
           </div>
 
           <p className="text-gray-500 mt-4">Inspiring students across every cohort.</p>
@@ -159,6 +147,14 @@ export default function InstructorDashboard() {
 
         <div className="w-full lg:w-80 bg-gray-50 p-4 lg:border-l border-t lg:border-t-0">
           <ProfileCard />
+          <div className="my-4">
+            <a
+              href="/instructor/create-course"
+              className="block w-full text-center px-4 py-3 bg-teal-500 text-white rounded-xl font-semibold shadow hover:bg-teal-600 transition-colors"
+            >
+              + Create New Course
+            </a>
+          </div>
           <CalendarWidget />
           <ToDoItem />
         </div>

@@ -80,10 +80,10 @@ const LandingPage = () => {
                   Start Learning Free
                   <ArrowRight size={20} />
                 </Link>
-                <button className="px-8 py-4 rounded-lg font-semibold text-lg bg-white/20 text-white border-2 border-white hover:bg-white hover:text-indigo-600 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+                {/* <button className="px-8 py-4 rounded-lg font-semibold text-lg bg-white/20 text-white border-2 border-white hover:bg-white hover:text-indigo-600 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2">
                   <Play size={20} />
                   Watch Demo
-                </button>
+                </button> */}
               </div>
               <div className="flex gap-8 flex-wrap">
                 {stats.map((stat, index) => (
@@ -191,7 +191,7 @@ const LandingPage = () => {
                 Get Started Now
                 <ArrowRight size={20} />
               </Link>
-              <Link to="/home" className="px-8 py-4 rounded-lg font-semibold text-lg bg-white/20 text-white border-2 border-white hover:bg-white hover:text-indigo-600 transition-all transform hover:-translate-y-0.5">
+              <Link to="/Courses" className="px-8 py-4 rounded-lg font-semibold text-lg bg-white/20 text-white border-2 border-white hover:bg-white hover:text-indigo-600 transition-all transform hover:-translate-y-0.5">
                 Browse Courses
               </Link>
             </div>

@@ -1,13 +1,9 @@
 import { Link } from "react-router-dom";
 import { BookOpen, ClipboardList, TrendingUp } from "lucide-react";
 
-// Versatile course card:
-// - If given `course` prop → full course card linking to details
-// - Else fallback to dashboard-style stats card using icon/lessons/progress props
 export default function CourseCard(props) {
   const { course } = props;
 
-  // Home / catalog style card
   if (course) {
     const id = course.id || course._id;
     const image = course.image || course.thumbnail;
@@ -44,7 +40,6 @@ export default function CourseCard(props) {
     );
   }
 
-  // Dashboard stats-style card
   const { icon, title, color, lessons, quizzes, progress } = props;
 
   return (

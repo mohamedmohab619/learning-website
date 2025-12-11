@@ -8,7 +8,6 @@ export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch courses from Supabase
   useEffect(() => {
     const fetchCourses = async () => {
       const { data, error } = await supabase

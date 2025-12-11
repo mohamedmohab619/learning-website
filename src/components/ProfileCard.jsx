@@ -2,28 +2,24 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function ProfileCard() {
-  const { user, isStudent, isInstructor } = useAuth();
-  // Get image from localStorage or use null for default placeholder
+  const { user} = useAuth();
   const [profileImage, setProfileImage] = useState(() => {
     return localStorage.getItem('profileImage') || null;
   });
   const fileInputRef = useRef(null);
 
-  // Save to localStorage whenever image changes
   useEffect(() => {
     if (profileImage) {
       localStorage.setItem('profileImage', profileImage);
     } else {
       localStorage.removeItem('profileImage');
     }
-    // Dispatch custom event to update Topbar in same window
     window.dispatchEvent(new Event('profileImageUpdated'));
   }, [profileImage]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         alert('Please select an image file');
         return;
@@ -46,7 +42,6 @@ export default function ProfileCard() {
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 overflow-hidden">
-      {/* Edit icon */}
       <div className="flex justify-end mb-2">
         <button
           onClick={handleEditClick}
@@ -70,7 +65,6 @@ export default function ProfileCard() {
         </button>
       </div>
 
-      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -79,7 +73,6 @@ export default function ProfileCard() {
         className="hidden"
       />
 
-      {/* Image */}
       <div className="flex flex-col items-center text-center">
         <div className="w-24 h-24 rounded-full border-4 border-gray-100 shadow-md overflow-hidden bg-gray-200 flex items-center justify-center">
           {profileImage ? (
@@ -99,13 +92,6 @@ export default function ProfileCard() {
         <h2 className="text-lg font-semibold mt-4 text-gray-800">
           {user?.username || user?.email || "Guest User"}
         </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          {isStudent
-            ? "Student"
-            : isInstructor
-            ? "Instructor"
-            : "Learner"}
-        </p>
       </div>
     </div>
   );

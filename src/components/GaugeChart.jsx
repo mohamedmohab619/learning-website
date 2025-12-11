@@ -2,10 +2,10 @@
 export default function GaugeChart({ value = 78, size = 200 }) {
   // size = SVG width/height (px)
   const strokeWidth = 12;
-  const radius = (size - strokeWidth) / 2; // leave room for stroke
+  const radius = (size - strokeWidth) / 2; 
   const center = size / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - value / 100); // amount to hide
+  const offset = circumference * (1 - value / 100);
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border mt-6">
@@ -34,13 +34,13 @@ export default function GaugeChart({ value = 78, size = 200 }) {
               cx={center}
               cy={center}
               r={radius}
-              stroke="#6366F1"               // main color
+              stroke="#6366F1"         
               strokeWidth={strokeWidth}
               fill="none"
               strokeDasharray={circumference}
               strokeDashoffset={offset}
               strokeLinecap="round"
-              transform={`rotate(-90 ${center} ${center})`} // start at top
+              transform={`rotate(-90 ${center} ${center})`} 
               style={{ transition: "stroke-dashoffset 800ms ease" }}
             />
           </svg>

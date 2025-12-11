@@ -6,13 +6,11 @@ import { useAuth } from "../contexts/AuthContext";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // ✅ remove profile from here
-  const { user, loading, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
 
-  // ✅ role comes from auth metadata
   const role = user?.user_metadata?.role;
 
   const dashboardPath =
@@ -37,7 +35,6 @@ const Header = () => {
           TOTC
         </Link>
 
-        {/* ---------- DESKTOP NAV ---------- */}
         <nav className="hidden md:flex items-center gap-8">
           <Link to="/">Home</Link>
           <Link to="/courses">Courses</Link>
@@ -46,15 +43,14 @@ const Header = () => {
             <>
               {role === "admin" && <Link to="/admin">Admin</Link>}
 
-              {/* ✅ role-aware dashboard link */}
+
               <Link to={dashboardPath}>Dashboard</Link>
 
-              <Link to="/profile">Profile</Link>
+              {/* <Link to="/profile">Profile</Link> */}
             </>
           )}
         </nav>
 
-        {/* ---------- DESKTOP ACTIONS ---------- */}
         <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
@@ -90,7 +86,6 @@ const Header = () => {
           )}
         </div>
 
-        {/* ---------- MOBILE MENU BUTTON ---------- */}
         <button
           className="md:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -99,7 +94,6 @@ const Header = () => {
         </button>
       </div>
 
-      {/* ---------- MOBILE MENU ---------- */}
       {isMenuOpen && (
         <div className="md:hidden border-t border-white/20 px-6 py-4">
           <nav className="flex flex-col gap-4">
@@ -114,11 +108,11 @@ const Header = () => {
                   </Link>
                 )}
 
-                {role === "instructor" && (
+                {/* {role === "instructor" && (
                   <Link to="/instructor" onClick={() => setIsMenuOpen(false)}>
                     Instructor Dashboard
                   </Link>
-                )}
+                )} */}
 
                 {/* ✅ role-aware dashboard link */}
                 <Link
@@ -128,9 +122,9 @@ const Header = () => {
                   Dashboard
                 </Link>
 
-                <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
+                {/* <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
                   Profile
-                </Link>
+                </Link> */}
 
                 <button
                   onClick={handleLogout}

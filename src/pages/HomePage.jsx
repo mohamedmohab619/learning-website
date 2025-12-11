@@ -47,10 +47,10 @@ const HomePage = () => {
               Learn React, JavaScript, and modern web development through hands-on projects,
               interactive lessons, and expert guidance.
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
+            {/* <div className="flex gap-4 justify-center flex-wrap">
               <button className="px-8 py-4 rounded-lg font-semibold text-lg bg-white text-indigo-600 hover:bg-gray-50 transition-all transform hover:-translate-y-0.5">Start Learning</button>
               <button className="px-8 py-4 rounded-lg font-semibold text-lg bg-white/20 text-white border-2 border-white hover:bg-white hover:text-indigo-600 transition-all transform hover:-translate-y-0.5">Browse Courses</button>
-            </div>
+            </div> */}
           </div>
         </section>
 

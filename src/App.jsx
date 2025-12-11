@@ -20,15 +20,15 @@ import Catalog from "./pages/Catalog";
 import CatalogCheckout from "./pages/CatalogCheckout";
 import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
-import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import CreateCoursePage from "./pages/create-course";
+
 
 function App() {
   return (
     <ThemeProvider>
       <Router>
-        {/* ✅ Router must wrap AuthProvider (important) */}
         <AuthProvider>
           <CourseProvider>
             <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors">
@@ -36,18 +36,21 @@ function App() {
 
               <main className="flex-1">
                 <Routes>
-                  {/* ---------- PUBLIC ROUTES ---------- */}
+                  
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/home" element={<HomePage />} />
                   <Route path="/catalog" element={<Catalog />} />
-                  <Route path="/catalog/checkout/:id" element={<CatalogCheckout />} />
+
+                 
+                  <Route path="/courses/checkout/:id" element={<CatalogCheckout />} />
+
                   <Route path="/courses" element={<Courses />} />
                   <Route path="/courses/:id" element={<CourseDetails />} />
-                  <Route path="/courses/checkout/:id" element={<Checkout />} />
+
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
 
-                  {/* ---------- STUDENT DASHBOARD ---------- */}
+                  
                   <Route
                     path="/dashboard"
                     element={
@@ -57,7 +60,6 @@ function App() {
                     }
                   />
 
-                  {/* ---------- INSTRUCTOR DASHBOARD ---------- */}
                   <Route
                     path="/instructor"
                     element={
@@ -67,7 +69,16 @@ function App() {
                     }
                   />
 
-                  {/* ---------- ADMIN DASHBOARD ---------- */}
+                  <Route
+                        path="/instructor/create-course"
+                        element={
+                          <ProtectedRoute role="instructor">
+                            <CreateCoursePage />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                 
                   <Route
                     path="/admin"
                     element={
@@ -77,7 +88,7 @@ function App() {
                     }
                   />
 
-                  {/* ---------- OTHER PROTECTED ROUTES ---------- */}
+                  
                   <Route
                     path="/course/:id"
                     element={
@@ -96,6 +107,7 @@ function App() {
                     }
                   />
 
+                
                   <Route
                     path="/profile"
                     element={
@@ -114,7 +126,7 @@ function App() {
                     }
                   />
 
-                  {/* ---------- CATCH ALL ---------- */}
+                 
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </main>

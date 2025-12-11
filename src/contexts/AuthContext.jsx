@@ -13,23 +13,21 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     console.log("👀 AuthContext initializing");
 
-    // ✅ Get initial session
     supabase.auth.getSession().then(({ data }) => {
       console.log("🔐 Initial session:", data.session);
 
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      setLoading(false); // ✅ CRITICAL
+      setLoading(false);
     });
 
-    // ✅ Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         console.log("🔄 Auth state changed:", _event);
 
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false); // ✅ CRITICAL
+        setLoading(false); 
       }
     );
 
@@ -38,7 +36,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // ✅ ✅ LOGOUT FUNCTION (FIXES YOUR ERROR)
   const logout = async () => {
     console.log("🚪 Logging out...");
     await supabase.auth.signOut();
@@ -53,7 +50,7 @@ export function AuthProvider({ children }) {
         user,
         session,
         loading,
-        logout, // ✅ EXPOSED HERE
+        logout, 
       }}
     >
       {children}

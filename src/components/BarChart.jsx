@@ -20,7 +20,7 @@ export default function BarChart() {
         label: "Hours Spent",
         data: [10, 15, 13, 20, 14, 18],
         borderRadius: 10,
-        backgroundColor: "#6366F1", // Indigo Tailwind color
+        backgroundColor: "#6366F1", 
       },
     ],
   };

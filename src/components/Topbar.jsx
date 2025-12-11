@@ -1,30 +1,29 @@
 import { Search, Bell, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext"; // import auth context
 
 export default function Topbar({
   onMenuClick,
   searchQuery = "",
   onSearchChange,
-  title = "Hello Mohamed 👋",
   subtitle = "Let's learn something new today!"
 }) {
+  const { user } = useAuth(); // get logged-in user
   const [profileImage, setProfileImage] = useState(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  // Get profile image from localStorage
+  const title = `Hello ${user?.user_metadata?.full_name || "Student"}`; 
+
   useEffect(() => {
     const image = localStorage.getItem('profileImage');
     setProfileImage(image);
     
-    // Listen for storage changes (when profile image is updated in ProfileCard)
     const handleStorageChange = () => {
       const updatedImage = localStorage.getItem('profileImage');
       setProfileImage(updatedImage);
     };
     
     window.addEventListener('storage', handleStorageChange);
-    
-    // Also listen for custom event for same-window updates
     window.addEventListener('profileImageUpdated', handleStorageChange);
     
     return () => {
@@ -35,9 +34,8 @@ export default function Topbar({
 
   return (
     <div className="relative flex items-center justify-between mb-6 gap-4">
-      {/* Left - Menu button (mobile only) and greeting */}
+
       <div className="flex items-center gap-3">
-        {/* Hamburger menu button - only visible on mobile */}
         <button
           onClick={onMenuClick}
           className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition"
@@ -52,8 +50,6 @@ export default function Topbar({
 
       {/* Right actions */}
       <div className="flex items-center gap-2 sm:gap-4">
-
-        {/* Search box - hidden on small mobile, visible on larger screens */}
         <div className="hidden sm:flex items-center gap-2 bg-white border rounded-full px-4 py-2 shadow-sm w-48 md:w-72">
           <Search size={18} className="text-gray-400" />
           <input
@@ -65,7 +61,6 @@ export default function Topbar({
           />
         </div>
 
-        {/* Mobile search - toggleable */}
         {isMobileSearchOpen ? (
           <div className="sm:hidden flex items-center gap-2 bg-white border rounded-full px-4 py-2 shadow-sm w-full absolute top-full left-0 mt-2 z-50">
             <Search size={18} className="text-gray-400" />
@@ -96,13 +91,11 @@ export default function Topbar({
           </button>
         )}
 
-        {/* Notification icon */}
-        <button className="relative p-2 rounded-full hover:bg-gray-100 transition">
+        {/* <button className="relative p-2 rounded-full hover:bg-gray-100 transition">
           <Bell size={20} className="text-gray-600" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
+        </button> */}
 
-        {/* Profile mini avatar */}
         <div className="w-9 h-9 rounded-full border overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0">
           {profileImage ? (
             <img
@@ -112,7 +105,8 @@ export default function Topbar({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500 text-white text-xs font-semibold">
-              MM
+              {user?.user_metadata?.full_name?.split(" ").map(n => n[0]).join("") || "ST"}
+              {/* initials from user's name, fallback ST */}
             </div>
           )}
         </div>
