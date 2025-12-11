@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function CatalogCourseCard({ id, title, img, category }) {
   return (
     <Link
-      to={`/course/${id}`}
+      to={`/courses/${id}`}
       className="block bg-white shadow-lg rounded-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300"
     >
       <img

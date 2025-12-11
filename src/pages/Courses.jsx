@@ -1,10 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CatalogCourseCard from "../components/CatalogCourseCard";
-import courses from "../data/courseData";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Courses() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch courses from Supabase
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select(`
+          *,
+          profiles (
+            full_name
+          )
+        `);
+
+      if (!error) setCourses(data);
+      setLoading(false);
+    };
+
+    fetchCourses();
+  }, []);
 
   const filteredCourses = courses.filter(
     (course) =>
@@ -13,6 +34,14 @@ export default function Courses() {
   );
 
   const categories = [...new Set(courses.map((c) => c.category))];
+
+  if (loading) {
+    return (
+      <div className="p-10 text-center text-xl font-semibold">
+        Loading courses...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -23,24 +52,29 @@ export default function Courses() {
         placeholder="Search courses..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full mb-4 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full mb-4 p-2 border border-gray-300 rounded-lg"
       />
 
       <div className="flex gap-3 mb-6 flex-wrap">
         <button
           onClick={() => setCategoryFilter("")}
           className={`px-4 py-2 rounded-lg ${
-            categoryFilter === "" ? "bg-blue-600 text-white" : "bg-gray-200"
+            categoryFilter === ""
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200"
           }`}
         >
           All
         </button>
+
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setCategoryFilter(cat)}
             className={`px-4 py-2 rounded-lg ${
-              categoryFilter === cat ? "bg-blue-600 text-white" : "bg-gray-200"
+              categoryFilter === cat
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
             }`}
           >
             {cat}

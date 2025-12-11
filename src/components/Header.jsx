@@ -2,25 +2,33 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { useMediaQuery } from "../hooks/useMediaQuery";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, profile, loading, logout } = useAuth();
+
+  // ✅ remove profile from here
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const isAuthenticated = !!user;
-  const role = profile?.role;
+
+  // ✅ role comes from auth metadata
+  const role = user?.user_metadata?.role;
+
+  const dashboardPath =
+    role === "student"
+      ? "/dashboard"
+      : role === "instructor"
+      ? "/instructor"
+      : role === "admin"
+      ? "/admin"
+      : "/";
 
   const handleLogout = async () => {
     await logout();
     setIsMenuOpen(false);
     navigate("/login");
   };
-
-
-  if (loading) return null;
 
   return (
     <header className="bg-teal-500 dark:bg-teal-700 text-white sticky top-0 z-50 shadow-md transition-colors">
@@ -37,8 +45,10 @@ const Header = () => {
           {isAuthenticated && (
             <>
               {role === "admin" && <Link to="/admin">Admin</Link>}
-              {role === "instructor" && <Link to="/instructor">Instructor</Link>}
-              <Link to="/dashboard">Dashboard</Link>
+
+              {/* ✅ role-aware dashboard link */}
+              <Link to={dashboardPath}>Dashboard</Link>
+
               <Link to="/profile">Profile</Link>
             </>
           )}
@@ -51,7 +61,7 @@ const Header = () => {
               <Link to="/profile" className="flex items-center gap-2">
                 <User size={20} />
                 <span className="hidden lg:inline">
-                  {profile?.full_name || user.email}
+                  {user.email}
                 </span>
               </Link>
 
@@ -103,17 +113,25 @@ const Header = () => {
                     Admin Dashboard
                   </Link>
                 )}
+
                 {role === "instructor" && (
                   <Link to="/instructor" onClick={() => setIsMenuOpen(false)}>
                     Instructor Dashboard
                   </Link>
                 )}
-                <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}>
+
+                {/* ✅ role-aware dashboard link */}
+                <Link
+                  to={dashboardPath}
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   Dashboard
                 </Link>
+
                 <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
                   Profile
                 </Link>
+
                 <button
                   onClick={handleLogout}
                   className="bg-white/20 mt-2 py-2 rounded-lg text-left"
